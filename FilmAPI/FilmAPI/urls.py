@@ -16,7 +16,9 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
+from rest_api.views import get_movie
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('api/movies/<int:film_id>/', get_movie, name='get_movie'),
 ]
