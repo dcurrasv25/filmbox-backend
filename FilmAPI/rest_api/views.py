@@ -1,39 +1,25 @@
 from django.http import JsonResponse
 from django.views.decorators.http import require_http_methods
 from .models import Film, Category
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+from rest_framework import status
+from .serializers import FilmSerializer
 
 # Create your views here.
 
-@require_http_methods(["GET"])
+@api_view(['GET'])
 def get_movie(request, film_id):
-    """Devuelve los datos detallados de una película en formato JSON.
+    """Devuelve los datos detallados de una película en formato JSON usando DRF.
 
     Responses:
     - 200: datos de la película
     - 404: {"error": "Movie not found"}
-    - 405: método no permitido (manejada por el decorador)
     """
     try:
         film = Film.objects.get(pk=film_id)
     except Film.DoesNotExist:
-        return JsonResponse({"error": "Movie not found"}, status=404)
+        return Response({"error": "Movie not found"}, status=status.HTTP_404_NOT_FOUND)
 
-    # Obtener categorías relacionadas
-    categorias_qs = Category.objects.filter(categoryfilm__film=film).distinct()
-    categorias = [{"id": c.pk, "nombre": c.title} for c in categorias_qs]
-
-
-    data = {
-        "id": film.pk,
-        "title": film.title,
-        "year": film.year,
-        "duration": film.length,
-        "director": film.director,
-        "description": film.description,
-        "categorias": categorias,
-        "image_url": film.image_url,
-        "film_url": getattr(film, 'film_url', ''),
-        "trailer_url": getattr(film, 'trailer_url', ''),
-    }
-
-    return JsonResponse(data, status=200)
+    serializer = FilmSerializer(film)
+    return Response(serializer.data, status=status.HTTP_200_OK)
