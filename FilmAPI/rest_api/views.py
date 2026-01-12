@@ -22,7 +22,7 @@ def get_user_from_token(request):
 
 class   MarkWatchedView(APIView):
 
-    def put(self, request, movieId):
+    def put(self, request, movie_id):
         user = get_user_from_token(request)
         if not user:
             return Response(
@@ -31,7 +31,7 @@ class   MarkWatchedView(APIView):
             )
 
         try:
-            film = Film.objects.get(id=movieId)
+            film = Film.objects.get(id=movie_id)
         except Film.DoesNotExist:
             return Response(
                 {"detail": "The film does not exist."},
