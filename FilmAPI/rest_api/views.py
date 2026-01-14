@@ -123,7 +123,7 @@ class DeleteLikeView(APIView):
         )
 
 
-class DeleteWatchlistView(APIView):
+class DeleteWishlistView(APIView):
 
     def delete(self, request, movie_id):
         # 401
@@ -148,7 +148,7 @@ class DeleteWatchlistView(APIView):
             # 200
             user_qs.delete()
             return Response(
-                {"detail": "Movie removed from watchlist."},
+                {"detail": "Movie removed from wishlist."},
                 status=status.HTTP_200_OK
             )
 
@@ -159,8 +159,8 @@ class DeleteWatchlistView(APIView):
                 status=status.HTTP_403_FORBIDDEN
             )
 
-        # 404 - no esta en ña watchlist
+        # 404 - no esta en ña wishlist
         return Response(
-            {"detail": "Movie not in watchlist."},
+            {"detail": "Movie not in wishlist."},
             status=status.HTTP_404_NOT_FOUND
         )
