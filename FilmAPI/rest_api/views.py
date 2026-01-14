@@ -5,15 +5,11 @@ from rest_framework import status
 from .models import Film, Comment, FilmBoxUser
 from django.utils.timezone import now
 
-def get_user_from_token(request):
-    auth = request.headers.get('Authorization')
-
-    if not auth or not auth.startswith('Bearer '):
+def get_authenticated_user(request):
+    auth = request.headers.get("Authorization")
+    if not auth or not auth.startswith("Bearer "):
         return None
-
-    token = auth.split(' ')[1].strip()
-
-
+    token = auth[len("Bearer "):].strip()
     try:
         return FilmBoxUser.objects.get(session_token=token)
     except FilmBoxUser.DoesNotExist:
@@ -22,7 +18,7 @@ def get_user_from_token(request):
 class MovieReviewView(APIView):
     def put(self, request, id):
         # 401 – Unauthorized
-        user = get_user_from_token(request)
+        user = get_authenticated_user(request)
         if not user:
             return Response(
                 {"error": "Unauthorized"},
