@@ -5,7 +5,7 @@ from .models import Film, WatchedFilm, FilmBoxUser
 from .serializers import FilmSerializer
 
 
-from .models import FavoriteFilm, FilmBoxUser
+from .models import FavoriteFilm, FilmBoxUser, WishlistFilm
 
 def get_authenticated_user(request):
     auth = request.headers.get("Authorization")
