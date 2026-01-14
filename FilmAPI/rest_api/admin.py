@@ -10,3 +10,4 @@ admin.site.register(WishlistFilm)
 admin.site.register(WatchedFilm)
 admin.site.register(Comment)
 # Register your models here.
+admin.site.register(Comment)
