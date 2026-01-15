@@ -29,3 +29,4 @@ class CommentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Comment
         fields = ('film', 'content', 'score')
+
