@@ -1,8 +1,8 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from .models import Film, WatchedFilm, FilmBoxUser
-from .serializers import FilmSerializer
+from .models import Film, WatchedFilm, FilmBoxUser, Comment
+from .serializers import FilmSerializer, CommentSerializer
 
 
 from .models import FavoriteFilm, FilmBoxUser, WishlistFilm
@@ -164,3 +164,18 @@ class DeleteWishlistView(APIView):
             {"detail": "Movie not in wishlist."},
             status=status.HTTP_404_NOT_FOUND
         )
+
+class CreateCommentView(APIView):
+    def post(self, request):
+        user = get_authenticated_user(request)
+        if not user:
+            return Response(
+                {"detail": "User not authenticated."},
+                status=status.HTTP_401_UNAUTHORIZED
+            )
+
+        serializer = CommentSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save(user=user)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

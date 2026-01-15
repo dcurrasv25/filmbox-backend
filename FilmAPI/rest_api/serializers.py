@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Film, Category
+from .models import Film, Category, Comment
 
 class CategorySerializer(serializers.ModelSerializer):
     id = serializers.IntegerField(source='pk')
@@ -25,3 +25,7 @@ class FilmSerializer(serializers.ModelSerializer):
         qs = Category.objects.filter(categoryfilm__film=obj).distinct()
         return CategorySerializer(qs, many=True).data
 
+class CommentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Comment
+        fields = ('film', 'content', 'score')
