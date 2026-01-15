@@ -164,3 +164,22 @@ class DeleteWishlistView(APIView):
             {"detail": "Movie not in wishlist."},
             status=status.HTTP_404_NOT_FOUND
         )
+
+
+class SearchMoviesView(APIView):
+
+    def get(self, request):
+        query = request.query_params.get('query')
+
+        # 400
+        if query is None or not query.strip():
+            return Response(
+                {"error": "Invalid query parameter"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # Buscar pro titulo
+        films = Film.objects.filter(title__icontains=query).order_by('id')
+
+        serializer = FilmSerializer(films, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
