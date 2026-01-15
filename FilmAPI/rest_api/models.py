@@ -1,3 +1,5 @@
+from datetime import timezone
+
 from django.db import models
 
 class FilmBoxUser(models.Model):
@@ -41,3 +43,9 @@ class Comment(models.Model):
   film = models.ForeignKey(Film, on_delete=models.CASCADE)
   content = models.CharField(max_length=200)
   score = models.IntegerField() # 1-5
+
+  created_at = models.DateTimeField(auto_now_add=True)
+  updated_at = models.DateTimeField(auto_now=True)
+
+  def __str__(self):
+      return f"{self.user} - {self.film} ({self.score})"

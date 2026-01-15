@@ -98,7 +98,7 @@ class MovieReviewView(APIView):
                     "author": user.username,
                     "rating": existing_comment.score,
                     "comment": existing_comment.content,
-                    "date": now(),
+                    "date": existing_comment.updated_at.astimezone().strftime('%Y-%m-%d %H:%M:%S'),
                 },
                 status=status.HTTP_200_OK
             )
@@ -115,7 +115,7 @@ class MovieReviewView(APIView):
                 "author": user.username,
                 "rating": new_comment.score,
                 "comment": new_comment.content,
-                "date": now(),
+                "date": new_comment.created_at.astimezone().strftime('%Y-%m-%d %H:%M:%S'),
             },
             status=status.HTTP_201_CREATED
         )
