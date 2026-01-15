@@ -26,6 +26,7 @@ def get_authenticated_user(request):
 
 # --- Views ---
 
+
 class MovieReviewView(APIView):
 
     def get(self, request, id):
@@ -37,21 +38,23 @@ class MovieReviewView(APIView):
                 status=status.HTTP_404_NOT_FOUND
             )
 
-        comments = (
-            Comment.objects
-            .filter(film=film)
-            .select_related("user")
-            .order_by("-created_at")[:3]
-        )
+        show_all = request.query_params.get('all', 'false').lower() == 'true'
+        comments_qs = Comment.objects.filter(film=film).select_related("user").order_by("-created_at")
+
+        if not show_all:
+            comments_qs = comments_qs[:3]
 
         reviews = []
-        for comment in comments:
+        for comment in comments_qs:
             reviews.append({
                 "author": comment.user.username,
                 "rating": comment.score,
                 "comment": comment.content,
                 "date": comment.created_at.astimezone().strftime('%Y-%m-%d %H:%M:%S'),
             })
+
+        if show_all:
+            return Response(reviews, status=status.HTTP_200_OK)
 
         return Response(
             {
