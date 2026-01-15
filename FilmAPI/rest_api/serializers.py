@@ -24,4 +24,3 @@ class FilmSerializer(serializers.ModelSerializer):
     def get_categorias(self, obj):
         qs = Category.objects.filter(categoryfilm__film=obj).distinct()
         return CategorySerializer(qs, many=True).data
-
