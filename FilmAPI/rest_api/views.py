@@ -1,30 +1,185 @@
-from django.shortcuts import render
-
-# Create your views here.
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-
-from .models import Film
+from .models import Film, WatchedFilm, FilmBoxUser
 from .serializers import FilmSerializer
+
+
+from .models import FavoriteFilm, FilmBoxUser, WishlistFilm
+
+def get_authenticated_user(request):
+    auth = request.headers.get("Authorization")
+    if not auth or not auth.startswith("Bearer "):
+        return None
+    token = auth[len("Bearer "):].strip()
+    try:
+        return FilmBoxUser.objects.get(session_token=token)
+    except FilmBoxUser.DoesNotExist:
+        return None
+
+class GetMovieView(APIView):
+
+    def get(self, request, film_id):
+        try:
+            film = Film.objects.get(pk=film_id)
+        except Film.DoesNotExist:
+            return Response(
+                {"error": "Movie not found"},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        serializer = FilmSerializer(film)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+class   MarkWatchedView(APIView):
+
+    def put(self, request, movie_id):
+        user = get_authenticated_user(request)
+        if not user:
+            return Response(
+                {"detail": "User not authenticated."},
+                status=status.HTTP_401_UNAUTHORIZED
+            )
+
+        try:
+            film = Film.objects.get(id=movie_id)
+        except Film.DoesNotExist:
+            return Response(
+                {"detail": "The film does not exist."},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        if WatchedFilm.objects.filter(user=user, film=film).exists():
+            return Response(
+                {"detail": "Film was already marked as watched."},
+                status=status.HTTP_200_OK
+            )
+
+        WatchedFilm.objects.create(user=user, film=film)
+        return Response(
+            {"detail": "Film marked as watched for the first time."},
+            status=status.HTTP_201_CREATED
+        )
+
+
+class DeleteWatchedView(APIView):
+
+    def delete(self, request, movie_id):
+        # 401 – Usuario no autenticado
+        user = get_authenticated_user(request)
+        if user is None:
+            return Response(
+                {"detail": "User not authenticated."},
+                status=status.HTTP_401_UNAUTHORIZED
+            )
+
+        # 404 – La película no existe
+        try:
+            film = Film.objects.get(pk=movie_id)
+        except Film.DoesNotExist:
+            return Response(
+                {"detail": "Movie not found."},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        # 404 – La película no estaba en watched de este usuario
+        try:
+            entry = WatchedFilm.objects.get(user=user, film=film)
+        except WatchedFilm.DoesNotExist:
+            return Response(
+                {"detail": "Movie not in watched list."},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        # 200 – Se elimina
+        entry.delete()
+        return Response(
+            {"detail": "Movie removed from watched list."},
+            status=status.HTTP_200_OK
+        )
+
+class DeleteLikeView(APIView):
+
+    def delete(self, request, movie_id):
+        user = get_authenticated_user(request)
+        if not user:
+            return Response(
+                {"detail": "User not authenticated"},
+                status=status.HTTP_401_UNAUTHORIZED
+            )
+
+        try:
+            like = FavoriteFilm.objects.get(user=user, film_id=movie_id)
+        except FavoriteFilm.DoesNotExist:
+            return Response(
+                {"detail": "Like not found"},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        like.delete()
+        return Response(
+            {"detail": "Like deleted"},
+            status=status.HTTP_204_NO_CONTENT
+        )
+
+
+class DeleteWishlistView(APIView):
+
+    def delete(self, request, movie_id):
+        # 401
+        user = get_authenticated_user(request)
+        if not user:
+            return Response(
+                {"detail": "User not authenticated."},
+                status=status.HTTP_401_UNAUTHORIZED
+            )
+
+        # 404
+        try:
+            film = Film.objects.get(pk=movie_id)
+        except Film.DoesNotExist:
+            return Response(
+                {"detail": "Movie not found."},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        user_qs = WishlistFilm.objects.filter(user=user, film=film)
+        if user_qs.exists():
+            # 200
+            user_qs.delete()
+            return Response(
+                {"detail": "Movie removed from wishlist."},
+                status=status.HTTP_200_OK
+            )
+
+        if WishlistFilm.objects.filter(film=film).exists():
+            # 403
+            return Response(
+                {"detail": "User cannot modify this resource."},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        # 404 - no esta en ña wishlist
+        return Response(
+            {"detail": "Movie not in wishlist."},
+            status=status.HTTP_404_NOT_FOUND
+        )
 
 
 class SearchMoviesView(APIView):
 
     def get(self, request):
-        # Leer ?query=
         query = request.query_params.get('query')
 
-        # 400 Bad Request si falta o está vacío
+        # 400
         if query is None or not query.strip():
             return Response(
                 {"error": "Invalid query parameter"},
                 status=status.HTTP_400_BAD_REQUEST
             )
 
-        # Búsqueda por título (case-insensitive)
+        # Buscar pro titulo
         films = Film.objects.filter(title__icontains=query).order_by('id')
 
-        # Serializar lista
         serializer = FilmSerializer(films, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
