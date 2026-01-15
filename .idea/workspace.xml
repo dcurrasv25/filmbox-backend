@@ -4,7 +4,10 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="81b83c9e-cc7c-4302-880c-c118b2791d4e" name="Changes" comment="Remove pycache and sqlite from repository" />
+    <list default="true" id="81b83c9e-cc7c-4302-880c-c118b2791d4e" name="Changes" comment="Remove pycache and sqlite from repository">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/FilmAPI/rest_api/views.py" beforeDir="false" afterPath="$PROJECT_DIR$/FilmAPI/rest_api/views.py" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
