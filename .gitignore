@@ -1,10 +1,15 @@
-# Python
+# Django / Python
 __pycache__/
 *.pyc
+*.pyo
+*.pyd
 
-# Django
+# SQLite database
 db.sqlite3
 
-# Entornos
-.env
+# Virtual environment (si existe)
 venv/
+.venv/
+
+# IDE
+.idea/
