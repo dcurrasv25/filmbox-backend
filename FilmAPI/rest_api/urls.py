@@ -6,7 +6,7 @@ from .views import MarkWatchedView
 from .views import DeleteWatchedView
 from .views import DeleteWishlistView
 from .views import SearchMoviesView
-from .views import WatchlistFilmView
+from .views import WishlistFilmView
 
 urlpatterns = [
     path('movies/<int:film_id>', GetMovieView.as_view(), name='get_movie'),
