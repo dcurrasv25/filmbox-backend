@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Film, Category
+from .models import Film, Category, FilmBoxUser
 
 class CategorySerializer(serializers.ModelSerializer):
     id = serializers.IntegerField(source='pk')
@@ -24,3 +24,16 @@ class FilmSerializer(serializers.ModelSerializer):
     def get_categorias(self, obj):
         qs = Category.objects.filter(categoryfilm__film=obj).distinct()
         return CategorySerializer(qs, many=True).data
+
+
+class UserSerializer(serializers.ModelSerializer):
+    id = serializers.IntegerField(source='pk')
+    avatar_url = serializers.SerializerMethodField()
+
+    class Meta:
+        model = FilmBoxUser
+        fields = ('id', 'username', 'avatar_url')
+
+    def get_avatar_url(self, obj):
+        return "https://.../default.png"
+

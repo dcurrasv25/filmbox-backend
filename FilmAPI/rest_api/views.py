@@ -11,7 +11,7 @@ from .models import (
     FilmBoxUser,
     WishlistFilm,
 )
-from .serializers import FilmSerializer
+from .serializers import FilmSerializer, UserSerializer
 
 def get_authenticated_user(request):
     auth = request.headers.get("Authorization")
@@ -180,17 +180,8 @@ class SearchUsersView(APIView):
 
         try:
             users = FilmBoxUser.objects.filter(username__icontains=query).order_by('id')
-
-            results = [
-                {
-                    "id": user.id,
-                    "username": user.username,
-                    "avatar_url": "https://..."
-                }
-                for user in users
-            ]
-
-            return Response(results, status=status.HTTP_200_OK)
+            serializer = UserSerializer(users, many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
 
         except Exception:
             return Response(
