@@ -26,6 +26,7 @@ def get_authenticated_user(request):
 
 # --- Views ---
 
+
 class MovieReviewView(APIView):
 
     def get(self, request, id):
@@ -192,6 +193,24 @@ class DeleteWishlistView(APIView):
         return Response({"detail": "Movie not in wishlist."}, status=status.HTTP_404_NOT_FOUND)
 
 
+class WishlistFilmView(APIView):
+    def put(self, request, film_id):
+        user = get_authenticated_user(request)
+        if not user:
+            return Response(status=status.HTTP_401_UNAUTHORIZED)
+
+        try:
+            film = Film.objects.get(id=film_id)
+        except Film.DoesNotExist:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+
+        if WishlistFilm.objects.filter(user=user, film=film).exists():
+            return Response(status=status.HTTP_200_OK)
+
+        WishlistFilm.objects.create(user=user, film=film)
+        return Response(status=status.HTTP_201_CREATED)
+
+
 class SearchMoviesView(APIView):
     def get(self, request):
         query = request.query_params.get('query')
@@ -201,3 +220,4 @@ class SearchMoviesView(APIView):
         films = Film.objects.filter(title__icontains=query).order_by('id')
         serializer = FilmSerializer(films, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
