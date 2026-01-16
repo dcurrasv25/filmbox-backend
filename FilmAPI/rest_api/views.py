@@ -13,17 +13,6 @@ from .models import (
 )
 from .serializers import FilmSerializer
 
-# --- Funciones de autenticación ---
-def get_user_from_token(request):
-    auth_header = request.headers.get('Authorization')
-    if not auth_header or not auth_header.startswith('Bearer '):
-        return None
-
-    try:
-        token = auth_header.split(' ')[1]
-        return FilmBoxUser.objects.get(session_token=token)
-    except FilmBoxUser.DoesNotExist:
-        return None
 
 def get_authenticated_user(request):
 
@@ -39,9 +28,9 @@ def get_authenticated_user(request):
 
 # --- Views ---
 
-class WatchlistFilmView(APIView):
+class WishlistFilmView(APIView):
     def put(self, request, film_id):
-        user = get_user_from_token(request)
+        user = get_authenticated_user(request)
         if not user:
             return Response(status=status.HTTP_401_UNAUTHORIZED)
 
