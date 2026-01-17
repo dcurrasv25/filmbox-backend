@@ -25,23 +25,6 @@ def get_authenticated_user(request):
         return None
 
 # --- Views ---
-class LikeFilmView(APIView):
-    def put(self, request, film_id):
-        user = get_authenticated_user(request)
-        if not user:
-            return Response(status=status.HTTP_401_UNAUTHORIZED)
-
-        try:
-            film = Film.objects.get(id=film_id)
-        except Film.DoesNotExist:
-            return Response(status=status.HTTP_404_NOT_FOUND)
-
-        if FavoriteFilm.objects.filter(user=user, film=film).exists():
-            return Response(status=status.HTTP_200_OK)
-
-        FavoriteFilm.objects.create(user=user, film=film)
-        return Response(status=status.HTTP_201_CREATED)
-
 class MovieReviewView(APIView):
     def get(self, request, id):
         try:
@@ -138,9 +121,9 @@ class MovieReviewView(APIView):
 
 
 class GetMovieView(APIView):
-    def get(self, request, film_id):
+    def get(self, request, movie_id):
         try:
-            film = Film.objects.get(pk=film_id)
+            film = Film.objects.get(pk=movie_id)
         except Film.DoesNotExist:
             return Response({"error": "Movie not found"}, status=status.HTTP_404_NOT_FOUND)
 
@@ -148,7 +131,7 @@ class GetMovieView(APIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
-class MarkWatchedView(APIView):
+class WatchedView(APIView):
     def put(self, request, movie_id):
         user = get_authenticated_user(request)
         if not user:
@@ -167,7 +150,6 @@ class MarkWatchedView(APIView):
         return Response({"detail": "Film marked as watched for the first time."}, status=status.HTTP_201_CREATED)
 
 
-class DeleteWatchedView(APIView):
     def delete(self, request, movie_id):
         user = get_authenticated_user(request)
         if not user:
@@ -183,7 +165,24 @@ class DeleteWatchedView(APIView):
         return Response({"detail": "Movie removed from watched list."}, status=status.HTTP_200_OK)
 
 
-class DeleteLikeView(APIView):
+
+class FavoriteFilmView(APIView):
+    def put(self, request, movie_id):
+        user = get_authenticated_user(request)
+        if not user:
+            return Response(status=status.HTTP_401_UNAUTHORIZED)
+
+        try:
+            film = Film.objects.get(id=movie_id)
+        except Film.DoesNotExist:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+
+        if FavoriteFilm.objects.filter(user=user, film=film).exists():
+            return Response(status=status.HTTP_200_OK)
+
+        FavoriteFilm.objects.create(user=user, film=film)
+        return Response(status=status.HTTP_201_CREATED)
+
     def delete(self, request, movie_id):
         user = get_authenticated_user(request)
         if not user:
