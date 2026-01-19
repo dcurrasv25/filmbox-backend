@@ -1,7 +1,11 @@
-from django.utils.timezone import now
-from rest_framework import status
-from rest_framework.response import Response
+import secrets
+
+from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticated
 from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+
+from .authentication import FilmBoxAuthentication
 
 from .models import (
     Film,
@@ -13,19 +17,51 @@ from .models import (
 )
 from .serializers import FilmSerializer, UserSerializer
 
-def get_authenticated_user(request):
-    auth = request.headers.get("Authorization")
-    if not auth or not auth.startswith("Bearer "):
-        return None
 
-    token = auth[len("Bearer "):].strip()
-    try:
-        return FilmBoxUser.objects.get(session_token=token)
-    except FilmBoxUser.DoesNotExist:
-        return None
+from django.contrib.auth.hashers import check_password # Importante para verificar el hash
+
+class LoginView(APIView):
+    authentication_classes = []
+    permission_classes = []
+
+    def post(self, request):
+        username = request.data.get('username')
+        password = request.data.get('password') # Esta es la contraseña en texto plano que viene de Android
+
+        try:
+            # 1. Buscamos al usuario SOLO por el nombre
+            user = FilmBoxUser.objects.get(username=username)
+
+            # 2. Comparamos la contraseña recibida con el hash de la base de datos
+            if check_password(password, user.encrypted_password):
+                # Si coincide, generamos el token
+                token = secrets.token_hex(25)
+                user.session_token = token
+                user.save()
+
+                return Response({
+                    "token": token,
+                    "username": user.username,
+                    "detail": "Login exitoso"
+                }, status=status.HTTP_200_OK)
+            else:
+                # Si la contraseña no coincide con el hash
+                return Response(
+                    {"detail": "Credenciales inválidas"},
+                    status=status.HTTP_401_UNAUTHORIZED
+                )
+
+        except FilmBoxUser.DoesNotExist:
+            # Si el usuario ni siquiera existe
+            return Response(
+                {"detail": "Credenciales inválidas"},
+                status=status.HTTP_401_UNAUTHORIZED
+            )
 
 # --- Views ---
 class MovieReviewView(APIView):
+    authentication_classes = [FilmBoxAuthentication]
+    permission_classes = [IsAuthenticatedOrReadOnly]
     def get(self, request, id):
         try:
             film = Film.objects.get(id=id)
@@ -63,9 +99,7 @@ class MovieReviewView(APIView):
         )
 
     def put(self, request, id):
-        user = get_authenticated_user(request)
-        if not user:
-            return Response({"error": "Unauthorized"}, status=status.HTTP_401_UNAUTHORIZED)
+        user = request.user
 
         try:
             film = Film.objects.get(id=id)
@@ -123,7 +157,11 @@ class MovieReviewView(APIView):
 
 
 class GetMovieView(APIView):
+    authentication_classes = [FilmBoxAuthentication]
+    permission_classes = [IsAuthenticatedOrReadOnly]
     def get(self, request, movie_id):
+        user = request.user
+
         try:
             film = Film.objects.get(pk=movie_id)
         except Film.DoesNotExist:
@@ -134,11 +172,10 @@ class GetMovieView(APIView):
 
 
 class WatchedView(APIView):
+    authentication_classes = [FilmBoxAuthentication]
+    permission_classes = [IsAuthenticated]
     def put(self, request, movie_id):
-        user = get_authenticated_user(request)
-        if not user:
-            return Response(
-                {"detail": "User not authenticated."}, status=status.HTTP_401_UNAUTHORIZED)
+        user = request.user
 
         try:
             film = Film.objects.get(id=movie_id)
@@ -153,9 +190,7 @@ class WatchedView(APIView):
 
 
     def delete(self, request, movie_id):
-        user = get_authenticated_user(request)
-        if not user:
-            return Response({"detail": "User not authenticated."}, status=status.HTTP_401_UNAUTHORIZED)
+        user = request.user
 
         try:
             film = Film.objects.get(pk=movie_id)
@@ -169,10 +204,11 @@ class WatchedView(APIView):
 
 
 class FavoriteFilmView(APIView):
+    authentication_classes = [FilmBoxAuthentication]
+    permission_classes = [IsAuthenticated]
+
     def put(self, request, movie_id):
-        user = get_authenticated_user(request)
-        if not user:
-            return Response(status=status.HTTP_401_UNAUTHORIZED)
+        user = request.user
 
         try:
             film = Film.objects.get(id=movie_id)
@@ -186,9 +222,7 @@ class FavoriteFilmView(APIView):
         return Response(status=status.HTTP_201_CREATED)
 
     def delete(self, request, movie_id):
-        user = get_authenticated_user(request)
-        if not user:
-            return Response({"detail": "User not authenticated"}, status=status.HTTP_401_UNAUTHORIZED)
+        user = request.user
 
         try:
             like = FavoriteFilm.objects.get(user=user, film_id=movie_id)
@@ -200,10 +234,10 @@ class FavoriteFilmView(APIView):
 
 
 class WishlistFilmView(APIView):
+    authentication_classes = [FilmBoxAuthentication]
+    permission_classes = [IsAuthenticated]
     def put(self, request, movie_id):
-        user = get_authenticated_user(request)
-        if not user:
-            return Response(status=status.HTTP_401_UNAUTHORIZED)
+        user = request.user
 
         try:
             film = Film.objects.get(id=movie_id)
@@ -217,9 +251,7 @@ class WishlistFilmView(APIView):
         return Response(status=status.HTTP_201_CREATED)
 
     def delete(self, request, movie_id):
-        user = get_authenticated_user(request)
-        if not user:
-            return Response({"detail": "User not authenticated."}, status=status.HTTP_401_UNAUTHORIZED)
+        user = request.user
 
         try:
             film = Film.objects.get(pk=movie_id)
@@ -235,7 +267,11 @@ class WishlistFilmView(APIView):
 
 
 class SearchMoviesView(APIView):
+    authentication_classes = [FilmBoxAuthentication]
+    permission_classes = [IsAuthenticatedOrReadOnly]
     def get(self, request):
+        user = request.user
+
         query = request.query_params.get('query')
         if not query or not query.strip():
             return Response({"error": "Invalid query parameter"}, status=status.HTTP_400_BAD_REQUEST)
@@ -245,7 +281,11 @@ class SearchMoviesView(APIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 class SearchUsersView(APIView):
+    authentication_classes = [FilmBoxAuthentication]
+    permission_classes = [IsAuthenticated]
     def get(self, request):
+        user = request.user
+
         query = request.query_params.get('query')
 
         if not query or not query.strip():
