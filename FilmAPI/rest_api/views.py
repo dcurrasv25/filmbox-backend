@@ -1,7 +1,8 @@
 from django.utils.timezone import now
-from rest_framework import status
+from rest_framework import status, generics
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from django.contrib.auth.models import User
 
 from .models import (
     Film,
@@ -11,7 +12,7 @@ from .models import (
     FilmBoxUser,
     WishlistFilm,
 )
-from .serializers import FilmSerializer, UserSerializer
+from .serializers import FilmSerializer, UserSerializer, UserRegistrationSerializer
 
 def get_authenticated_user(request):
     auth = request.headers.get("Authorization")
@@ -264,3 +265,14 @@ class SearchUsersView(APIView):
                 {"error": "Internal server error"},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
+
+class UserRegistrationView(generics.CreateAPIView):
+    queryset = User.objects.all()
+    serializer_class = UserRegistrationSerializer
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)

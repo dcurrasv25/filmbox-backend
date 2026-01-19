@@ -1,11 +1,14 @@
 from django.urls import path
-from .views import MovieReviewView
-from .views import FavoriteFilmView
-from .views import GetMovieView
-from .views import WatchedView
-from .views import WishlistFilmView
-from .views import SearchMoviesView
-from .views import SearchUsersView
+from .views import (
+    MovieReviewView,
+    FavoriteFilmView,
+    GetMovieView,
+    WatchedView,
+    WishlistFilmView,
+    SearchMoviesView,
+    SearchUsersView,
+    UserRegistrationView,
+)
 
 urlpatterns = [
     path('movies/<int:movie_id>', GetMovieView.as_view(), name='get_movie'),
@@ -15,4 +18,5 @@ urlpatterns = [
     path('favorites/<int:movie_id>', FavoriteFilmView.as_view(), name='favorite_film'),
     path('wishlist/<int:movie_id>', WishlistFilmView.as_view(), name='wishlist'),
     path('users', SearchUsersView.as_view(), name='search_users'),
+    path('register', UserRegistrationView.as_view(), name='register'),
 ]

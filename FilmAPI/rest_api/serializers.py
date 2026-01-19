@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from .models import Film, Category, FilmBoxUser
+from django.contrib.auth.models import User
 
 class CategorySerializer(serializers.ModelSerializer):
     id = serializers.IntegerField(source='pk')
@@ -37,3 +38,17 @@ class UserSerializer(serializers.ModelSerializer):
     def get_avatar_url(self, obj):
         return "https://.../default.png"
 
+
+class UserRegistrationSerializer(serializers.ModelSerializer):
+    password = serializers.CharField(write_only=True)
+
+    class Meta:
+        model = User
+        fields = ('id', 'username', 'password')
+
+    def create(self, validated_data):
+        user = User.objects.create_user(
+            username=validated_data['username'],
+            password=validated_data['password']
+        )
+        return user
