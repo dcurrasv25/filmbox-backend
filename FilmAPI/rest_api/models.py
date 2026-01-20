@@ -8,6 +8,14 @@ class FilmBoxUser(models.Model):
   # Without profile picture - let's just add a default image in the Android app
   session_token = models.CharField(unique=True, max_length=100, null=True, blank=True)
 
+  @property
+  def is_authenticated(self):
+      return True
+
+  @property
+  def is_anonymous(self):
+      return False
+
 class Category(models.Model):
   title = models.CharField(max_length=100, unique=True)
   image_url = models.CharField(max_length=200) # e.g.: http://static.com/front.jpg
