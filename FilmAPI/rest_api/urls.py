@@ -25,6 +25,7 @@ urlpatterns = [
     path("movies/<int:movie_id>", GetMovieView.as_view(), name="get_movie"),
     path("movies/<int:id>/reviews", MovieReviewView.as_view(), name="movie_review"),
 
+    path("watched", WatchedView.as_view(), name="watched_list"),
     path("watched/<int:movie_id>", WatchedView.as_view(), name="watched"),
     path("favorites", FavoriteListView.as_view(), name="favorite_list"),
     path("favorites/<int:movie_id>", FavoriteFilmView.as_view(), name="favorite_film"),

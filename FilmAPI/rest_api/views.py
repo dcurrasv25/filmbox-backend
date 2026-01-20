@@ -318,6 +318,14 @@ class WatchedView(APIView):
             status=status.HTTP_200_OK,
         )
 
+    def get(self, request):
+        user = request.user
+        watched = WatchedFilm.objects.filter(user=user).select_related("film")
+        films = [w.film for w in watched]
+        serializer = FilmSerializer(films, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
 
 # =========================
 # FAVORITES
