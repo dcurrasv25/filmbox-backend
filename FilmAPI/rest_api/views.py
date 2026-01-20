@@ -110,6 +110,31 @@ class CategoryListView(APIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
+class CategoryMoviesView(APIView):
+    authentication_classes = [FilmBoxAuthentication]
+    permission_classes = [IsAuthenticatedOrReadOnly]
+
+    def get(self, request, category_id):
+        try:
+            Category.objects.get(pk=category_id)
+        except Category.DoesNotExist:
+            return Response(
+                {"detail": "Category not found"},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        films = (
+            Film.objects
+            .filter(categoryfilm__category_id=category_id)
+            .order_by("id")
+            .distinct()
+        )
+
+        serializer = FilmSerializer(films, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+
 # =========================
 # REVIEWS
 # =========================

@@ -13,7 +13,7 @@ from .views import (
     UserRegistrationView,
     LogoutView,
     CategoryListView,
-    FavoriteListView,
+    FavoriteListView, CategoryMoviesView,
 )
 
 urlpatterns = [
@@ -33,4 +33,6 @@ urlpatterns = [
 
     path("users", SearchUsersView.as_view(), name="search_users"),
     path("categories", CategoryListView.as_view(), name="categories"),
+    path("categories/<int:category_id>/movies", CategoryMoviesView.as_view(), name="category_movies"),
+
 ]
