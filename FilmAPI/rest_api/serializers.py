@@ -1,5 +1,7 @@
+from django.contrib.auth.hashers import make_password
 from rest_framework import serializers
 from .models import Film, Category, FilmBoxUser
+from django.contrib.auth.models import User
 
 class CategorySerializer(serializers.ModelSerializer):
     id = serializers.IntegerField(source='pk')
@@ -37,3 +39,17 @@ class UserSerializer(serializers.ModelSerializer):
     def get_avatar_url(self, obj):
         return "https://.../default.png"
 
+
+class UserRegistrationSerializer(serializers.ModelSerializer):
+    password = serializers.CharField(write_only=True)
+
+    class Meta:
+        model = FilmBoxUser
+        fields = ('id', 'username', 'password')
+
+    def create(self, validated_data):
+        return FilmBoxUser.objects.create(
+            username=validated_data['username'],
+            encrypted_password=make_password(validated_data['password']),
+            session_token=None
+        )

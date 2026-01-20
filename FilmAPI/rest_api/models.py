@@ -4,9 +4,9 @@ from django.db import models
 
 class FilmBoxUser(models.Model):
   username = models.CharField(unique=True, max_length=100)
-  encrypted_password = models.CharField(max_length=100)
+  encrypted_password = models.CharField(max_length=255)
   # Without profile picture - let's just add a default image in the Android app
-  session_token = models.CharField(unique=True, max_length=100)
+  session_token = models.CharField(unique=True, max_length=100, null=True, blank=True)
 
 class Category(models.Model):
   title = models.CharField(max_length=100, unique=True)
