@@ -316,6 +316,17 @@ class FavoriteFilmView(APIView):
             status=status.HTTP_204_NO_CONTENT,
         )
 
+class FavoriteListView(APIView):
+    authentication_classes = [FilmBoxAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        user = request.user
+        favorites = FavoriteFilm.objects.filter(user=user).select_related('film')
+        films = [f.film for f in favorites]
+        serializer = FilmSerializer(films, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
 
 # =========================
 # WISHLIST
