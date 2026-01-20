@@ -64,6 +64,35 @@ class LoginView(APIView):
                 status=status.HTTP_401_UNAUTHORIZED,
             )
 
+class LogoutView(APIView):
+    authentication_classes = []
+    permission_classes = []
+
+    def post(self, request):
+        token = request.data.get("token")
+
+        if not token or not str(token).strip():
+            return Response(
+                {"detail": "Token inválido o expirado"},
+                status=status.HTTP_401_UNAUTHORIZED,
+            )
+
+        try:
+            user = FilmBoxUser.objects.get(session_token=token)
+        except FilmBoxUser.DoesNotExist:
+            return Response(
+                {"detail": "Token inválido o expirado"},
+                status=status.HTTP_401_UNAUTHORIZED,
+            )
+
+        user.session_token = None
+        user.save(update_fields=["session_token"])
+
+        return Response(
+            {"detail": "Logout exitoso"},
+            status=status.HTTP_200_OK,
+        )
+
 
 # =========================
 # REVIEWS

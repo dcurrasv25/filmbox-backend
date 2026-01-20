@@ -10,11 +10,13 @@ from .views import (
     SearchMoviesView,
     SearchUsersView,
     UserRegistrationView,
+    LogoutView,
 )
 
 urlpatterns = [
     path("users/login", LoginView.as_view(), name="login"),
     path("register", UserRegistrationView.as_view(), name="register"),
+    path('users/logout', LogoutView.as_view(), name='logout'),
 
     path("movies", SearchMoviesView.as_view(), name="search_movies"),
     path("movies/<int:movie_id>", GetMovieView.as_view(), name="get_movie"),
