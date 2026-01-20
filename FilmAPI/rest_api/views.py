@@ -11,6 +11,7 @@ from rest_framework.views import APIView
 from .authentication import FilmBoxAuthentication
 from .models import (
     Film,
+    Category,
     Comment,
     WatchedFilm,
     FavoriteFilm,
@@ -19,6 +20,7 @@ from .models import (
 )
 from .serializers import (
     FilmSerializer,
+    CategorySerializer,
     UserSerializer,
     UserRegistrationSerializer,
 )
@@ -92,6 +94,20 @@ class LogoutView(APIView):
             {"detail": "Logout exitoso"},
             status=status.HTTP_200_OK,
         )
+
+
+# =========================
+# CATEGORIES
+# =========================
+
+class CategoryListView(APIView):
+    authentication_classes = [FilmBoxAuthentication]
+    permission_classes = [IsAuthenticatedOrReadOnly]
+
+    def get(self, request):
+        categories = Category.objects.all().order_by('title')
+        serializer = CategorySerializer(categories, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 # =========================
@@ -388,14 +404,21 @@ class SearchMoviesView(APIView):
 
     def get(self, request):
         query = request.query_params.get("query")
+        category_id = request.query_params.get("category")
 
-        if not query or not query.strip():
-            return Response(
-                {"error": "Invalid query parameter"},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
+        films = Film.objects.all().order_by("id")
 
-        films = Film.objects.filter(title__icontains=query).order_by("id")
+        if category_id:
+            films = films.filter(categoryfilm__category_id=category_id)
+
+        if query and query.strip():
+            films = films.filter(title__icontains=query)
+
+        if not query and not category_id:
+            # If no filter is provided, maybe return all movies or an empty list.
+            # For now, let's return all, but this could be changed.
+            pass
+
         serializer = FilmSerializer(films, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
