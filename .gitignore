@@ -4,8 +4,6 @@ __pycache__/
 *.pyo
 *.pyd
 
-# SQLite database
-FilmAPI/db.sqlite3
 
 # Virtual environment (si existe)
 venv/

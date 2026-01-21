@@ -4,8 +4,10 @@ from .views import (
     LoginView,
     MovieReviewView,
     FavoriteFilmView,
+    FavoriteView,
     GetMovieView,
     WatchedView,
+    WatchedFilmView,
     WishlistFilmView,
     WishlistView,
     SearchMoviesView,
@@ -13,7 +15,6 @@ from .views import (
     UserRegistrationView,
     LogoutView,
     CategoryListView,
-    FavoriteListView, CategoryMoviesView,
 )
 
 urlpatterns = [
@@ -26,14 +27,14 @@ urlpatterns = [
     path("movies/<int:id>/reviews", MovieReviewView.as_view(), name="movie_review"),
 
     path("watched", WatchedView.as_view(), name="watched_list"),
-    path("watched/<int:movie_id>", WatchedView.as_view(), name="watched"),
-    path("favorites", FavoriteListView.as_view(), name="favorite_list"),
+    path("watched/<int:movie_id>", WatchedFilmView.as_view(), name="watched"),
+    
+    path("favorites", FavoriteView.as_view(), name="favorite_list"),
     path("favorites/<int:movie_id>", FavoriteFilmView.as_view(), name="favorite_film"),
+
     path("wishlist", WishlistView.as_view(), name="wishlist_list"),
     path("wishlist/<int:movie_id>", WishlistFilmView.as_view(), name="wishlist"),
 
     path("users", SearchUsersView.as_view(), name="search_users"),
     path("categories", CategoryListView.as_view(), name="categories"),
-    path("categories/<int:category_id>/movies", CategoryMoviesView.as_view(), name="category_movies"),
-
 ]

@@ -110,31 +110,6 @@ class CategoryListView(APIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
-class CategoryMoviesView(APIView):
-    authentication_classes = [FilmBoxAuthentication]
-    permission_classes = [IsAuthenticatedOrReadOnly]
-
-    def get(self, request, category_id):
-        try:
-            Category.objects.get(pk=category_id)
-        except Category.DoesNotExist:
-            return Response(
-                {"detail": "Category not found"},
-                status=status.HTTP_404_NOT_FOUND,
-            )
-
-        films = (
-            Film.objects
-            .filter(categoryfilm__category_id=category_id)
-            .order_by("id")
-            .distinct()
-        )
-
-        serializer = FilmSerializer(films, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
-
-
-
 # =========================
 # REVIEWS
 # =========================
@@ -277,6 +252,17 @@ class WatchedView(APIView):
     authentication_classes = [FilmBoxAuthentication]
     permission_classes = [IsAuthenticated]
 
+    def get(self, request):
+        user = request.user
+        watched = WatchedFilm.objects.filter(user=user).select_related("film")
+        films = [w.film for w in watched]
+        serializer = FilmSerializer(films, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+class WatchedFilmView(APIView):
+    authentication_classes = [FilmBoxAuthentication]
+    permission_classes = [IsAuthenticated]
+
     def put(self, request, movie_id):
         user = request.user
 
@@ -318,18 +304,21 @@ class WatchedView(APIView):
             status=status.HTTP_200_OK,
         )
 
-    def get(self, request):
-        user = request.user
-        watched = WatchedFilm.objects.filter(user=user).select_related("film")
-        films = [w.film for w in watched]
-        serializer = FilmSerializer(films, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
-
-
 
 # =========================
 # FAVORITES
 # =========================
+
+class FavoriteView(APIView):
+    authentication_classes = [FilmBoxAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        user = request.user
+        favorites = FavoriteFilm.objects.filter(user=user).select_related('film')
+        films = [f.film for f in favorites]
+        serializer = FilmSerializer(films, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 class FavoriteFilmView(APIView):
     authentication_classes = [FilmBoxAuthentication]
@@ -364,17 +353,6 @@ class FavoriteFilmView(APIView):
             {"detail": "Like deleted"},
             status=status.HTTP_204_NO_CONTENT,
         )
-
-class FavoriteListView(APIView):
-    authentication_classes = [FilmBoxAuthentication]
-    permission_classes = [IsAuthenticated]
-
-    def get(self, request):
-        user = request.user
-        favorites = FavoriteFilm.objects.filter(user=user).select_related('film')
-        films = [f.film for f in favorites]
-        serializer = FilmSerializer(films, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 # =========================
