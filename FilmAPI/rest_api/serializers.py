@@ -4,12 +4,10 @@ from .models import Film, Category, FilmBoxUser
 from django.contrib.auth.models import User
 
 class CategorySerializer(serializers.ModelSerializer):
-    id = serializers.IntegerField(source='pk')
-    nombre = serializers.CharField(source='title')
-
     class Meta:
         model = Category
-        fields = ('id', 'nombre')
+        fields = ("id", "title", "image_url")
+
 
 class FilmSerializer(serializers.ModelSerializer):
     id = serializers.IntegerField(source='pk')
