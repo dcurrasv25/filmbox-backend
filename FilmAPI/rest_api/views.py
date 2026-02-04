@@ -272,6 +272,7 @@ class MovieReviewView(APIView):
 
 # =========================
 # MOVIES
+# Detalle completo de una película
 # =========================
 
 class GetMovieView(APIView):
@@ -520,6 +521,7 @@ class UserRegistrationView(generics.CreateAPIView):
 
 # =========================
 # PREVIEW
+# Endpoint para obtener información básica de una película
 # =========================
 
 class GetFilmPreviewView(APIView):
