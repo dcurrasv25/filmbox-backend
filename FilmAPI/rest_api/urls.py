@@ -33,7 +33,7 @@ urlpatterns = [
     path("watched", WatchedListView.as_view(), name="watched_list"),
     path("watched/<int:movie_id>", WatchedDetailView.as_view(), name="watched"),
     path("favorites", FavoriteListView.as_view(), name="favorite_list"),
-    path("favorites/<int:movie_id>", FavoriteFilmView.as_view(), name="cdfavorite_film"),
+    path("favorites/<int:movie_id>", FavoriteFilmView.as_view(), name="favorite_film"),
     path("wishlist", WishlistView.as_view(), name="wishlist_list"),
     path("wishlist/<int:movie_id>", WishlistFilmView.as_view(), name="wishlist"),
 
