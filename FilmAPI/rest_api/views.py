@@ -29,20 +29,25 @@ from .serializers import (
 
 # =========================
 # AUTH
+# Manejo de login / logout usando token en la DB
 # =========================
 
 class LoginView(APIView):
+    # Login sin autenticación previa
     authentication_classes = []
     permission_classes = []
 
     def post(self, request):
+        # Se obtienen las credenciales del body
         username = request.data.get("username")
         password = request.data.get("password")
 
         try:
             user = FilmBoxUser.objects.get(username=username)
 
+            # Se valida la contraseña hasheada
             if check_password(password, user.encrypted_password):
+                # Se genera un token aleatorio seguro
                 token = secrets.token_hex(25)
                 user.session_token = token
                 user.save()
@@ -56,11 +61,13 @@ class LoginView(APIView):
                     status=status.HTTP_200_OK,
                 )
 
+            # Password incorrecta
             return Response(
                 {"detail": "Credenciales inválidas"},
                 status=status.HTTP_401_UNAUTHORIZED,
             )
 
+        # Usuario no existe
         except FilmBoxUser.DoesNotExist:
             return Response(
                 {"detail": "Credenciales inválidas"},
