@@ -59,3 +59,9 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
             encrypted_password=make_password(validated_data['password']),
             session_token=None
         )
+
+
+class FilmPreviewSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Film
+        fields = ("title", "image_url", "year")

@@ -24,6 +24,7 @@ from .serializers import (
     CategorySerializer,
     UserSerializer,
     UserRegistrationSerializer,
+    FilmPreviewSerializer,
 )
 
 
@@ -506,3 +507,24 @@ class UserRegistrationView(generics.CreateAPIView):
             },
             status=status.HTTP_201_CREATED,
         )
+
+
+# =========================
+# PREVIEW
+# =========================
+
+class GetFilmPreviewView(APIView):
+    authentication_classes = [FilmBoxAuthentication]
+    permission_classes = [IsAuthenticatedOrReadOnly]
+
+    def get(self, request, movie_id):
+        try:
+            film = Film.objects.only("title", "image_url", "year").get(pk=movie_id)
+        except Film.DoesNotExist:
+            return Response(
+                {"detail": "Film not found"},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        serializer = FilmPreviewSerializer(film)
+        return Response(serializer.data, status=status.HTTP_200_OK)
