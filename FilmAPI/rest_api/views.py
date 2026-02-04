@@ -118,6 +118,7 @@ class CategoryListView(APIView):
     permission_classes = [IsAuthenticatedOrReadOnly]
 
     def get(self, request):
+        # Devuelve todas las categorías ordenadas por título
         categories = Category.objects.all().order_by('title')
         serializer = CategorySerializer(categories, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
@@ -128,9 +129,11 @@ class CategoryMoviesView(APIView):
     permission_classes = [IsAuthenticatedOrReadOnly]
 
     def get(self, request, category_id):
+        # Se valida la existencia de la categoría
         if not Category.objects.filter(pk=category_id).exists():
             return Response({"detail": "Category not found"}, status=status.HTTP_404_NOT_FOUND)
 
+        # Se obtienen las películas de la categoría (query optimizada)
         films = (
             Film.objects
             .filter(categoryfilm__category_id=category_id)
