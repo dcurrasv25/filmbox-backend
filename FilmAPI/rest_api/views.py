@@ -75,12 +75,15 @@ class LoginView(APIView):
             )
 
 class LogoutView(APIView):
+    # Logout también sin autenticación DRF
     authentication_classes = []
     permission_classes = []
 
     def post(self, request):
+        # El token llega por el body
         token = request.data.get("token")
 
+        # Validación básica
         if not token or not str(token).strip():
             return Response(
                 {"detail": "Token inválido o expirado"},
@@ -95,6 +98,7 @@ class LogoutView(APIView):
                 status=status.HTTP_401_UNAUTHORIZED,
             )
 
+        # Se invalida el token
         user.session_token = None
         user.save(update_fields=["session_token"])
 
@@ -106,6 +110,7 @@ class LogoutView(APIView):
 
 # =========================
 # CATEGORIES
+# Endpoints públicos / semi-públicos
 # =========================
 
 class CategoryListView(APIView):
